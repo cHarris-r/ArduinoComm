@@ -1,10 +1,12 @@
 /* Christopher Harris
  * Trystan Lea
+ * 
  * 4/08/2014
 
  * This class:
- * - Starts up the communication with the Arduino.
- * - Reads the data coming in from the Arduino and print's it out to terminal.
+ * - Starts up the communication with the Arduino via serial
+ * - Reads the serial data coming in from the Arduino and print's it out to terminal
+ * - The port must be specified in 'Program.java'
 
  * Code builds upon this great example:
  * http://www.csc.kth.se/utbildning/kth/kurser/DH2400/interak06/SerialWork.java
@@ -19,16 +21,17 @@ import java.util.TooManyListenersException;
 //Load RXTX Library
 import gnu.io.*;
 import java.util.StringTokenizer;
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
+
 
 /**
- * 
+ * ArduinoComm :
+ * Actively listens to open port and stored data in string buffer.
+ * It is used (or at least its methods are) by both the main and myArduino threads.
  * @author christopher
  */
 class ArduinoComm implements SerialPortEventListener {
 
-    // Declare serial port variable
+    // Declare serial port Object
     SerialPort mySerialPort;
     
     // Declare input steam
@@ -39,7 +42,10 @@ class ArduinoComm implements SerialPortEventListener {
     private final Object lockbr = new Object();
 
     /**
-     * This open's the communcations port with the arduino
+     * Method :: Start :
+     * This opens the communication port with the Arduino.
+     * Actively listens to the port for serial event.
+     * Stores serial data into string buffer
      * @param portName
      * @param baudRate 
      */
@@ -90,7 +96,10 @@ class ArduinoComm implements SerialPortEventListener {
         }
     } // End of start
 
-    // Used to close the serial port
+    /**
+     * Method :: closeSerialPort :
+     * closes serial connection
+    */ 
     public void closeSerialPort() {
         try {
             in.close();
@@ -118,17 +127,6 @@ class ArduinoComm implements SerialPortEventListener {
                 } catch (IOException ex) {
                 }
             }
-            
-            /*valArr = InputTokenizer();
-            try {
-                System.out.println(br.readLine());
-                System.out.println("valArr[0]" + valArr[0]);
-                System.out.println("valArr[1]" + valArr[1]);
-                System.out.println("valArr[2]" + valArr[2]);
-                System.out.println();
-            } catch (Exception e) {
-                throw new IllegalArgumentException("SerialEvent :: Couldn't read buffer stream");
-            }*/ // End check
         } // End Event while loop
     } // End serialEvent
 
@@ -141,7 +139,6 @@ class ArduinoComm implements SerialPortEventListener {
         // Keep threads from interfering with the buffer string
         synchronized (lockbr)
         {
-            //System.out.println( br.readLine() ); // A check
             StringTokenizer str = new StringTokenizer(random);
             while (str.hasMoreTokens()) {
                 valArr[arrCount] = Integer.parseInt(str.nextToken());
